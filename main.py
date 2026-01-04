@@ -70,7 +70,7 @@ def login():
     error = None
     if request.method == 'POST':
         email = request.form.get('email')
-        password = request.form.get('password')
+        password = request.form.get('password', '')
         
         if email == ADMIN_EMAIL and check_password_hash(ADMIN_PASSWORD_HASH, password):
             session['logged_in'] = True
