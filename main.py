@@ -2,23 +2,19 @@ from flask import Flask, render_template_string, request, session, redirect, url
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SESSION_SECRET', 'grafxcore_default_secret_key')
-DIRECTORY = "Grafxcore-V1zip/agency-site"
+app.secret_key = "grafxcore_secret_key" # In a real app, use a proper secret key
+DIRECTORY = "agency-site"
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
 
-# Admin Credentials (using environment variables with fallbacks)
-ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'manish@grafxcore.in')
-# Store hashed password. Default password "Manish@891819" hashed.
-# In production, ONLY use ADMIN_PASSWORD_HASH env var.
-DEFAULT_HASH = generate_password_hash('Manish@891819')
-ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH', DEFAULT_HASH)
+# Admin Credentials
+ADMIN_EMAIL = "manish@grafxcore.in"
+ADMIN_PASSWORD = "Manish@891819"
 
 LOGIN_HTML = """
 <!DOCTYPE html>
@@ -58,7 +54,6 @@ def root():
     return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
 
 @app.route('/home')
-@app.route('/index.html')
 def home():
     return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
 
@@ -69,20 +64,15 @@ def login():
     
     error = None
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password', '')
-        
-        if email == ADMIN_EMAIL and check_password_hash(ADMIN_PASSWORD_HASH, password):
+        if request.form['email'] == ADMIN_EMAIL and request.form['password'] == ADMIN_PASSWORD:
             session['logged_in'] = True
-            session.permanent = True # Session lasts across browser restarts
             return redirect(url_for('admin'))
         else:
-            error = "Invalid email or password"
+            error = "Invalid credentials"
             
     return render_template_string(LOGIN_HTML, error=error)
 
 @app.route('/admin')
-@app.route('/admin.html')
 def admin():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -94,19 +84,16 @@ def logout():
     return redirect(url_for('home'))
 
 @app.route('/contactus')
-@app.route('/ct.html')
 def contact():
     return send_from_directory(DIRECTORY, 'ct.html', mimetype='text/html')
 
 @app.route('/aboutus')
-@app.route('/about.html')
 def about():
     if os.path.exists(os.path.join(DIRECTORY, 'about.html')):
         return send_from_directory(DIRECTORY, 'about.html', mimetype='text/html')
     return redirect('/home')
 
 @app.route('/portfolio')
-@app.route('/wpage.html')
 def portfolio_clean():
     return send_from_directory(DIRECTORY, 'wpage.html', mimetype='text/html')
 
