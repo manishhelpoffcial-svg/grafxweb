@@ -45,6 +45,19 @@ Preferred communication style: Simple, everyday language.
    - Pro: Self-contained authentication flow
    - Con: Harder to maintain, mixes concerns
 
+## Clean URLs and Hosting Compatibility
+
+The project is configured with "Clean URLs" (e.g., `/home` instead of `/index.html`). 
+
+### Hosting Support:
+1. **Flask (Python)**: Handled automatically in `main.py`.
+2. **Apache (Shared Hosting)**: Supported via `.htaccess`.
+3. **Vercel**: Supported via `vercel.json`.
+4. **Firebase**: Supported via `firebase.json`.
+5. **Netlify**: Standard redirect rules apply.
+
+If moving to a different host, ensure the configuration file relevant to that platform is included in the deployment.
+
 ## External Dependencies
 
 ### Frontend Libraries (CDN)
