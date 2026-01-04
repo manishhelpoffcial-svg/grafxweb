@@ -54,6 +54,7 @@ def root():
     return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
 
 @app.route('/home')
+@app.route('/index.html')
 def home():
     return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
 
@@ -73,6 +74,7 @@ def login():
     return render_template_string(LOGIN_HTML, error=error)
 
 @app.route('/admin')
+@app.route('/admin.html')
 def admin():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -84,16 +86,19 @@ def logout():
     return redirect(url_for('home'))
 
 @app.route('/contactus')
+@app.route('/ct.html')
 def contact():
     return send_from_directory(DIRECTORY, 'ct.html', mimetype='text/html')
 
 @app.route('/aboutus')
+@app.route('/about.html')
 def about():
     if os.path.exists(os.path.join(DIRECTORY, 'about.html')):
         return send_from_directory(DIRECTORY, 'about.html', mimetype='text/html')
     return redirect('/home')
 
 @app.route('/portfolio')
+@app.route('/wpage.html')
 def portfolio_clean():
     return send_from_directory(DIRECTORY, 'wpage.html', mimetype='text/html')
 
