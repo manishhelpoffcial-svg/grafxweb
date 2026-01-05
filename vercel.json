@@ -12,7 +12,31 @@
       "destination": "/app.py"
     },
     {
-      "source": "/(home|aboutus|portfolio|contactus|login|admin|logout)",
+      "source": "/home",
+      "destination": "/app.py"
+    },
+    {
+      "source": "/aboutus",
+      "destination": "/app.py"
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/app.py"
+    },
+    {
+      "source": "/contactus",
+      "destination": "/app.py"
+    },
+    {
+      "source": "/login",
+      "destination": "/app.py"
+    },
+    {
+      "source": "/admin",
+      "destination": "/app.py"
+    },
+    {
+      "source": "/logout",
       "destination": "/app.py"
     },
     {
