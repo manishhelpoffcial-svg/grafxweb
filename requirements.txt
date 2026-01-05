@@ -8,3 +8,9 @@ psycopg2-binary==2.9.11
 Werkzeug==3.1.4
 python-dotenv
 supabase
+postgrest
+httpx
+storage3
+realtime
+supabase-auth
+supabase-functions
