@@ -6,22 +6,22 @@
       "use": "@vercel/python"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "app.py"
+      "source": "/api/(.*)",
+      "destination": "/app.py"
     },
     {
-      "src": "/(home|aboutus|portfolio|contactus|login|admin|logout)",
-      "dest": "app.py"
+      "source": "/(home|aboutus|portfolio|contactus|login|admin|logout)",
+      "destination": "/app.py"
     },
     {
-      "src": "/favicon.jpg",
-      "dest": "/client/favicon.jpg"
+      "source": "/favicon.jpg",
+      "destination": "/client/favicon.jpg"
     },
     {
-      "src": "/(.*)",
-      "dest": "/client/$1"
+      "source": "/(.*)",
+      "destination": "/client/$1"
     }
   ]
 }
