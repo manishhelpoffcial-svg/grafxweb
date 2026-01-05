@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python server/app.py"
+args = "python app.py"
 waitForPort = 5000
 
 [[ports]]

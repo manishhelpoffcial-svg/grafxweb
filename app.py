@@ -5,9 +5,9 @@ from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 app.secret_key = "grafxcore_secret_key" # In a real app, use a proper secret key
-DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../client")
+DIRECTORY = "client"
 
-DATABASE_URL = os.environ.get('postgresql://postgres:password@helium/heliumdb?sslmode=disable')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db_connection():
     return psycopg2.connect(DATABASE_URL)
