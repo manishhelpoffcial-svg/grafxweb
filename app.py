@@ -21,7 +21,7 @@ LOGIN_HTML = """
 <head>
     <title>Login - GrafxCore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="icon" type="image/jpeg" href="/favicon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #f6f7f8; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
@@ -101,8 +101,6 @@ def portfolio_clean():
 def add_inquiry():
     data = request.json
     try:
-        # Simplified insert - Ensure keys match Supabase table exactly
-        # Note: Using execute() on the table operation directly
         response = supabase.table('inquiries').insert({
             "name": str(data.get('name', '')),
             "email": str(data.get('email', '')),
@@ -133,6 +131,10 @@ def delete_inquiry(id):
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/favicon.jpg')
+def favicon():
+    return send_from_directory(DIRECTORY, 'favicon.jpg')
 
 @app.route('/<path:path>')
 def static_files(path):
