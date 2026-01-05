@@ -1,16 +1,15 @@
 from flask import Flask, render_template_string, request, session, redirect, url_for, send_from_directory, jsonify
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from supabase import create_client, Client
 
 app = Flask(__name__)
-app.secret_key = "grafxcore_secret_key" # In a real app, use a proper secret key
+app.secret_key = "grafxcore_secret_key"
 DIRECTORY = "client"
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
+# Supabase Configuration
+SUPABASE_URL = "https://rysuqfamvbwqcaoyfwzx.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5c3VxZmFtdmJ3cWNhb3lmd3p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzYxNDEsImV4cCI6MjA4MzExMjE0MX0.9hyiBNaDOPNP6U8EjVkalgUpvIO5opj9T5HsoV3yEZo"
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Admin Credentials
 ADMIN_EMAIL = "manish@grafxcore.in"
@@ -22,6 +21,7 @@ LOGIN_HTML = """
 <head>
     <title>Login - GrafxCore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background: #f6f7f8; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
@@ -101,15 +101,12 @@ def portfolio_clean():
 def add_inquiry():
     data = request.json
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO inquiries (name, email, budget, message) VALUES (%s, %s, %s, %s)",
-            (data['name'], data['email'], data['budget'], data['message'])
-        )
-        conn.commit()
-        cur.close()
-        conn.close()
+        response = supabase.table('inquiries').insert({
+            "name": data.get('name'),
+            "email": data.get('email'),
+            "budget": str(data.get('budget')),
+            "message": data.get('message')
+        }).execute()
         return jsonify({"status": "success"}), 201
     except Exception as e:
         print(f"Error saving inquiry: {e}")
@@ -120,27 +117,17 @@ def get_inquiries():
     if not session.get('logged_in'):
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
     try:
-        conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute("SELECT * FROM inquiries ORDER BY created_at DESC")
-        rows = cur.fetchall()
-        cur.close()
-        conn.close()
-        return jsonify(rows)
+        response = supabase.table('inquiries').select("*").order("created_at", desc=True).execute()
+        return jsonify(response.data)
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/api/inquiries/<int:id>', methods=['DELETE'])
+@app.route('/api/inquiries/<id>', methods=['DELETE'])
 def delete_inquiry(id):
     if not session.get('logged_in'):
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("DELETE FROM inquiries WHERE id = %s", (id,))
-        conn.commit()
-        cur.close()
-        conn.close()
+        supabase.table('inquiries').delete().eq("id", id).execute()
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
