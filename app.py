@@ -101,7 +101,8 @@ def portfolio_clean():
 def add_inquiry():
     data = request.json
     try:
-        # Simplified insert to avoid potential key/value issues
+        # Simplified insert - Ensure keys match Supabase table exactly
+        # Note: Using execute() on the table operation directly
         response = supabase.table('inquiries').insert({
             "name": str(data.get('name', '')),
             "email": str(data.get('email', '')),
@@ -110,7 +111,7 @@ def add_inquiry():
         }).execute()
         return jsonify({"status": "success"}), 201
     except Exception as e:
-        print(f"Supabase Error: {e}")
+        print(f"Supabase error: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/inquiries', methods=['GET'])
