@@ -16,6 +16,10 @@
       "dest": "app.py"
     },
     {
+      "src": "/favicon.jpg",
+      "dest": "/client/favicon.jpg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/client/$1"
     }
