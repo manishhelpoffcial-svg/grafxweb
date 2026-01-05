@@ -1,0 +1,13 @@
+# Disable directory browsing
+Options -Indexes
+
+# Custom Error Pages
+ErrorDocument 404 /index.html
+
+# Handle Clean URLs (if the server supports mod_rewrite)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ $1.html [L]
+</IfModule>
