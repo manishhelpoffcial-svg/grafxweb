@@ -101,15 +101,16 @@ def portfolio_clean():
 def add_inquiry():
     data = request.json
     try:
+        # Simplified insert to avoid potential key/value issues
         response = supabase.table('inquiries').insert({
-            "name": data.get('name'),
-            "email": data.get('email'),
-            "budget": str(data.get('budget')),
-            "message": data.get('message')
+            "name": str(data.get('name', '')),
+            "email": str(data.get('email', '')),
+            "budget": str(data.get('budget', '0')),
+            "message": str(data.get('message', ''))
         }).execute()
         return jsonify({"status": "success"}), 201
     except Exception as e:
-        print(f"Error saving inquiry: {e}")
+        print(f"Supabase Error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/inquiries', methods=['GET'])
