@@ -1,13 +1,24 @@
-# Disable directory browsing
-Options -Indexes
-
-# Custom Error Pages
 ErrorDocument 404 /index.html
 
-# Handle Clean URLs (if the server supports mod_rewrite)
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ $1.html [L]
-</IfModule>
+RewriteEngine On
+RewriteBase /
+
+# Redirect index.html to /home
+RewriteRule ^index\.html$ home [R=301,L]
+
+# Redirect about.html to /aboutus
+RewriteRule ^about\.html$ aboutus [R=301,L]
+
+# Redirect wpage.html to /portfolio
+RewriteRule ^wpage\.html$ portfolio [R=301,L]
+
+# Redirect ct.html to /contactus
+RewriteRule ^ct\.html$ contactus [R=301,L]
+
+# Internal rewrites for clean URLs
+RewriteRule ^home$ index.html [L]
+RewriteRule ^aboutus$ about.html [L]
+RewriteRule ^portfolio$ wpage.html [L]
+RewriteRule ^contactus$ ct.html [L]
+RewriteRule ^admin$ admin.html [L]
+RewriteRule ^login$ login.html [L]
