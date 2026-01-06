@@ -4,12 +4,11 @@ import os
 from supabase import create_client, Client
 
 app = Flask(__name__)
-# Enable CORS for all routes and origins explicitly for Vercel
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 app.secret_key = "grafxcore_secret_key"
-# Fix: Vercel serverless functions root is the project root
-DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)), "client")
+# On Vercel, the project root is the current working directory
+DIRECTORY = os.path.join(os.getcwd(), "client")
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
@@ -20,14 +19,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Admin Credentials
 ADMIN_EMAIL = "manish@grafxcore.in"
 ADMIN_PASSWORD = "Manish@891819"
-
-@app.route('/api/test-db', methods=['GET'])
-def test_db():
-    try:
-        res = supabase.table('inquiries').select("count", count="exact").limit(1).execute()
-        return jsonify({"status": "connected", "data": res.data}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/')
 def root():
@@ -126,8 +117,7 @@ def add_inquiry():
         }).execute()
         return jsonify({"status": "success"}), 201
     except Exception as e:
-        error_msg = str(e)
-        return jsonify({"status": "error", "message": error_msg}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/inquiries', methods=['GET'])
 def get_inquiries():
@@ -165,5 +155,5 @@ def static_files(path):
     
     return send_from_directory(DIRECTORY, path)
 
-# Vercel entry point
+# This is important for Vercel
 app = app
