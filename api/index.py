@@ -4,11 +4,11 @@ import os
 from supabase import create_client, Client
 
 app = Flask(__name__)
-# Enable CORS for all routes and origins explicitly for Vercel
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 app.secret_key = "grafxcore_secret_key"
-DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)), "client")
+# Fix: Vercel serverless functions root is the project root
+DIRECTORY = "client"
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
@@ -157,5 +157,5 @@ def static_files(path):
     
     return send_from_directory(DIRECTORY, path)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+# Vercel entry point
+app = app
