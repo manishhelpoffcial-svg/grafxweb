@@ -25,7 +25,11 @@ document.getElementById('contactForm').onsubmit = async (e) => {
   try {
     const response = await fetch('/api/inquiries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(formData)
     });
 

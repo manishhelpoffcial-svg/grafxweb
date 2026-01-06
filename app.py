@@ -1,8 +1,10 @@
 from flask import Flask, render_template_string, request, session, redirect, url_for, send_from_directory, jsonify
+from flask_cors import CORS
 import os
 from supabase import create_client, Client
 
 app = Flask(__name__)
+CORS(app) # Enable CORS globally for all routes
 app.secret_key = "grafxcore_secret_key"
 DIRECTORY = "client"
 
@@ -15,7 +17,28 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 ADMIN_EMAIL = "manish@grafxcore.in"
 ADMIN_PASSWORD = "Manish@891819"
 
-LOGIN_HTML = """
+@app.route('/')
+def root():
+    return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
+
+@app.route('/home')
+def home():
+    return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if session.get('logged_in'):
+        return redirect(url_for('admin'))
+    
+    error = None
+    if request.method == 'POST':
+        if request.form['email'] == ADMIN_EMAIL and request.form['password'] == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('admin'))
+        else:
+            error = "Invalid credentials"
+            
+    return render_template_string("""
 <!DOCTYPE html>
 <html>
 <head>
@@ -47,30 +70,7 @@ LOGIN_HTML = """
     </div>
 </body>
 </html>
-"""
-
-@app.route('/')
-def root():
-    return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
-
-@app.route('/home')
-def home():
-    return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if session.get('logged_in'):
-        return redirect(url_for('admin'))
-    
-    error = None
-    if request.method == 'POST':
-        if request.form['email'] == ADMIN_EMAIL and request.form['password'] == ADMIN_PASSWORD:
-            session['logged_in'] = True
-            return redirect(url_for('admin'))
-        else:
-            error = "Invalid credentials"
-            
-    return render_template_string(LOGIN_HTML, error=error)
+""", error=error)
 
 @app.route('/admin')
 def admin():
@@ -97,11 +97,11 @@ def about():
 def portfolio_clean():
     return send_from_directory(DIRECTORY, 'wpage.html', mimetype='text/html')
 
-@app.route('/api/inquiries', methods=['POST', 'OPTIONS'])
+@app.route('/api/inquiries', methods=['POST'])
 def add_inquiry():
-    if request.method == 'OPTIONS':
-        return '', 204
     data = request.json
+    if not data:
+        return jsonify({"status": "error", "message": "No data received"}), 400
     try:
         response = supabase.table('inquiries').insert({
             "name": str(data.get('name', '')),
