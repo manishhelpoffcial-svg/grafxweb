@@ -26,6 +26,23 @@
     <!-- Portfolio Section -->
     <div id="worksSection">
       <div class="card">
+        <h2>Manage Categories</h2>
+        <div class="form-group">
+          <label>New Category Name</label>
+          <div style="display: flex; gap: 10px;">
+            <input id="newCatName" placeholder="e.g. Graphic Design">
+            <select id="parentCatSelect">
+              <option value="">Main Category</option>
+            </select>
+            <button class="primary" onclick="addCategory()" style="width: auto;">Add</button>
+          </div>
+        </div>
+        <div id="categoryList" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px;">
+          <!-- Categories chips -->
+        </div>
+      </div>
+
+      <div class="card">
         <h2>Add New Work</h2>
         <div class="form-group">
           <label>Project ID</label>

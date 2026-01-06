@@ -102,6 +102,67 @@ def about():
 def portfolio_clean():
     return send_from_directory(DIRECTORY, 'wpage.html')
 
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    try:
+        response = supabase.table('categories').select("*").order("name").execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify([])
+
+@app.route('/api/categories', methods=['POST'])
+def add_category():
+    if not session.get('logged_in'):
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    data = request.json
+    try:
+        supabase.table('categories').insert({
+            "name": data.get('name'),
+            "parent_id": data.get('parent_id') # None for main category
+        }).execute()
+        return jsonify({"status": "success"}), 201
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/categories/<id>', methods=['DELETE'])
+def delete_category(id):
+    if not session.get('logged_in'):
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    try:
+        supabase.table('categories').delete().eq("id", id).execute()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/works', methods=['GET'])
+def get_works():
+    try:
+        response = supabase.table('works').select("*").order("created_at", desc=True).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify([])
+
+@app.route('/api/works', methods=['POST'])
+def add_work():
+    if not session.get('logged_in'):
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    data = request.json
+    try:
+        supabase.table('works').insert(data).execute()
+        return jsonify({"status": "success"}), 201
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/works/<id>', methods=['DELETE'])
+def delete_work(id):
+    if not session.get('logged_in'):
+        return jsonify({"status": "error", "message": "Unauthorized"}), 401
+    try:
+        supabase.table('works').delete().eq("id", id).execute()
+        return jsonify({"status": "success"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/inquiries', methods=['POST', 'OPTIONS'])
 def add_inquiry():
     if request.method == 'OPTIONS':

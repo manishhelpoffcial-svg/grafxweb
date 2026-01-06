@@ -1,123 +1,110 @@
-const grid=document.getElementById("grid");
-const content=document.getElementById("content");
-const focus=document.getElementById("focus");
+let allWorks = [];
+let categories = [];
+let currentFilter = 'all';
 
-const data=JSON.parse(localStorage.getItem("works"))||[];
-
-data.forEach(w=>{
-  const d=document.createElement("div");
-  d.className=`card ${w.category} ${w.subcategory}`;
-  
-  if (w.image.includes("youtube.com") || w.image.includes("youtu.be")) {
-    // Get Video ID
-    let vid = "";
-    if (w.image.includes("v=")) vid = w.image.split("v=")[1].split("&")[0];
-    else if (w.image.includes("embed/")) vid = w.image.split("embed/")[1].split("?")[0];
-    else if (w.image.includes("youtu.be/")) vid = w.image.split("youtu.be/")[1].split("?")[0];
-    
-    const thumb = `https://img.youtube.com/vi/${vid}/mqdefault.jpg`;
-    d.innerHTML=`<div class="video-thumb-container" style="aspect-ratio: 16/9;">
-                   <img src="${thumb}" style="height: 100%; object-fit: cover;">
-                   <i class="fa-brands fa-youtube video-play-icon"></i>
-                 </div>`;
-  } else {
-    d.innerHTML=`<img src="${w.image}">`;
-  }
-  
-  d.onclick=()=>openFocus(w);
-  grid.appendChild(d);
-});
-
-const subCats = {
-  graphic_design: [
-    { name: "Poster", icon: "fa-image" },
-    { name: "Logo", icon: "fa-pen-nib" },
-    { name: "Thumbnail", icon: "fa-youtube" },
-    { name: "Menu Card", icon: "fa-file-invoice" },
-    { name: "Business Card", icon: "fa-address-card" }
-  ],
-  video_editing: [
-    { name: "Short Video", icon: "fa-bolt" },
-    { name: "Long Video", icon: "fa-film" },
-    { name: "Wedding Video", icon: "fa-heart" }
-  ]
-};
-
-function filter(cat){
-  const cards = document.querySelectorAll(".card");
-  cards.forEach(c=>{
-    c.style.display=cat==="all"||c.classList.contains(cat)?"block":"none";
-  });
-
-  const subcatBar = document.getElementById('subcatBar');
-  subcatBar.innerHTML = '';
-  
-  if (cat !== 'all' && subCats[cat]) {
-    subCats[cat].forEach(s => {
-      const btn = document.createElement('button');
-      const sVal = s.name.toLowerCase().replace(/ /g, '_');
-      btn.innerHTML = `<i class="fa-solid ${s.icon}"></i> ${s.name}`;
-      btn.onclick = () => filterSub(sVal);
-      subcatBar.appendChild(btn);
-    });
-  }
-  toggleMenu(false);
+async function init() {
+  try {
+    const [worksRes, catsRes] = await Promise.all([
+      fetch('/api/works'),
+      fetch('/api/categories')
+    ]);
+    allWorks = await worksRes.json();
+    categories = await catsRes.json();
+    renderCategoryBar();
+    renderGrid();
+  } catch (e) { console.error(e); }
 }
 
-function filterSub(subcat) {
-  document.querySelectorAll(".card").forEach(c=>{
-    c.style.display=c.classList.contains(subcat)?"block":"none";
+function renderCategoryBar() {
+  const bar = document.querySelector('.category-bar');
+  const mainCats = categories.filter(c => !c.parent_id);
+  bar.innerHTML = '<button onclick="filter(\'all\')"><i class="fa-solid fa-border-all"></i> All</button>';
+  mainCats.forEach(c => {
+    bar.innerHTML += `<button onclick="filter(${c.id})">${c.name}</button>`;
   });
 }
 
-function openFocus(w){
-  focus.style.display="flex";
-  content.classList.add("blur");
+function filter(catId) {
+  currentFilter = catId;
+  const subBar = document.getElementById('subcatBar');
+  subBar.innerHTML = "";
   
-  const focusImg = document.getElementById("focusImg");
-  const focusBox = document.querySelector(".focus-box");
-  const focusWA = document.getElementById("focusWA");
-  
-  // Remove existing iframe if any
-  const oldIframe = focusBox.querySelector("iframe");
-  if (oldIframe) oldIframe.remove();
-  focusImg.style.display = "block";
-
-  if (w.image.includes("youtube.com") || w.image.includes("youtu.be")) {
-    let vid = "";
-    if (w.image.includes("v=")) vid = w.image.split("v=")[1].split("&")[0];
-    else if (w.image.includes("embed/")) vid = w.image.split("embed/")[1].split("?")[0];
-    else if (w.image.includes("youtu.be/")) vid = w.image.split("youtu.be/")[1].split("?")[0];
-    
-    focusImg.style.display = "none";
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1`;
-    iframe.width = "100%";
-    iframe.height = "250px";
-    iframe.frameBorder = "0";
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-    iframe.allowFullscreen = true;
-    iframe.style.borderRadius = "14px";
-    focusBox.insertBefore(iframe, focusBox.firstChild);
-  } else {
-    focusImg.src=w.image;
+  if (catId !== 'all') {
+    const subCats = categories.filter(c => c.parent_id == catId);
+    if (subCats.length > 0) {
+      subBar.innerHTML = '<button onclick="filterSub(\'all\')" style="padding: 5px 15px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer;">All Sub</button>';
+      subCats.forEach(s => {
+        subBar.innerHTML += `<button onclick="filterSub(${s.id})" style="padding: 5px 15px; border-radius: 20px; border: 1px solid #ddd; background: #fff; cursor: pointer;">${s.name}</button>`;
+      });
+    }
   }
+  renderGrid();
+}
+
+let currentSubFilter = 'all';
+function filterSub(subId) {
+  currentSubFilter = subId;
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = "";
   
-  focusId.innerText=w.id;
-  const msg = encodeURIComponent(`Hi, I'm interested in work ID ${w.id}. Can we discuss this?`);
-  focusWA.href = `https://wa.me/918918197622?text=${msg}`;
+  let filtered = allWorks;
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(w => w.category_id == currentFilter);
+    if (currentSubFilter !== 'all') {
+      filtered = filtered.filter(w => w.subcategory_id == currentSubFilter);
+    }
+  }
+
+  filtered.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = () => openFocus(w);
+    
+    const isVideo = w.image.includes("youtube.com") || w.image.includes("youtu.be") || (w.image.includes("dropbox.com") && w.image.includes("raw=1"));
+    
+    if (isVideo) {
+      card.innerHTML = `
+        <div style="position:relative; padding-top: 56.25%; background: #000; border-radius: 12px; overflow: hidden;">
+          <i class="fa-solid fa-play" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size: 30px; z-index: 2;"></i>
+          <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3);"></div>
+        </div>
+      `;
+    } else {
+      card.innerHTML = `<img src="${w.image}" style="width:100%; border-radius: 12px; display:block;">`;
+    }
+    grid.appendChild(card);
+  });
 }
 
-function closeFocus(){
-  focus.style.display="none";
-  content.classList.remove("blur");
-  const focusBox = document.querySelector(".focus-box");
-  const iframe = focusBox.querySelector("iframe");
-  if (iframe) iframe.remove();
+function openFocus(w) {
+  const focus = document.getElementById('focus');
+  const container = document.getElementById('mediaContainer');
+  const isYoutube = w.image.includes("youtube.com") || w.image.includes("youtu.be");
+  const isDirectVideo = w.image.includes("raw=1") || w.image.endsWith(".mp4");
+
+  if (isYoutube) {
+    let vidId = "";
+    if (w.image.includes("v=")) vidId = w.image.split("v=")[1].split("&")[0];
+    else if (w.image.includes("youtu.be/")) vidId = w.image.split("youtu.be/")[1].split("?")[0];
+    container.innerHTML = `<div style="padding-top: 56.25%; position:relative;"><iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
+  } else if (isDirectVideo) {
+    container.innerHTML = `<video src="${w.image}" controls autoplay style="width:100%; display:block; aspect-ratio: 16/9; object-fit: contain;"></video>`;
+  } else {
+    container.innerHTML = `<img src="${w.image}" style="width:100%; display:block;">`;
+  }
+
+  document.getElementById('focusId').innerText = w.id;
+  document.getElementById('focusWA').href = `https://wa.me/91891819?text=Hi, I'm interested in project ${w.id}`;
+  focus.style.display = "flex";
 }
 
-function toggleMenu(force){
-  const m=document.getElementById("menu");
-  m.classList.toggle("active",force??!m.classList.contains("active"));
-  content.classList.toggle("blur");
+function closeFocus() {
+  document.getElementById('focus').style.display = "none";
+  document.getElementById('mediaContainer').innerHTML = "";
 }
+
+init();

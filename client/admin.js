@@ -1,12 +1,112 @@
 const list = document.getElementById("list");
 
-function getData() {
-  return JSON.parse(localStorage.getItem("works")) || [];
+let categories = [];
+
+async function fetchCategories() {
+  try {
+    const res = await fetch('/api/categories');
+    categories = await res.json();
+    updateCategorySelects();
+    renderCategories();
+  } catch (e) { console.error("Cat fetch failed", e); }
 }
 
-function getNextId() {
-  const data = getData();
-  if (data.length === 0) return "#GXC001";
+function updateCategorySelects() {
+  const mainSelect = document.getElementById('cat');
+  const parentSelect = document.getElementById('parentCatSelect');
+  if (!mainSelect || !parentSelect) return;
+
+  const mainCats = categories.filter(c => !c.parent_id);
+  
+  mainSelect.innerHTML = '<option value="">Select Category</option>';
+  parentSelect.innerHTML = '<option value="">Main Category</option>';
+
+  mainCats.forEach(c => {
+    mainSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    parentSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+  });
+}
+
+function updateSubCats() {
+  const catId = document.getElementById("cat").value;
+  const sub = document.getElementById("subcat");
+  if (!sub) return;
+  sub.innerHTML = '<option value="">Select Sub-Category</option>';
+  
+  const subCats = categories.filter(c => c.parent_id == catId);
+  subCats.forEach(c => {
+    sub.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+  });
+}
+
+async function addCategory() {
+  const name = document.getElementById('newCatName').value;
+  const parent_id = document.getElementById('parentCatSelect').value || null;
+  if (!name) return alert("Enter name");
+
+  const res = await fetch('/api/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, parent_id })
+  });
+  if (res.ok) {
+    document.getElementById('newCatName').value = "";
+    fetchCategories();
+  }
+}
+
+function renderCategories() {
+  const list = document.getElementById('categoryList');
+  if (!list) return;
+  list.innerHTML = "";
+  categories.forEach(c => {
+    const chip = document.createElement('span');
+    chip.style = "background: #e2e8f0; padding: 5px 12px; border-radius: 999px; font-size: 12px; display: flex; align-items: center; gap: 8px;";
+    chip.innerHTML = `${c.name} ${c.parent_id ? '<small>(sub)</small>' : ''} <i class="fa-solid fa-xmark" style="cursor:pointer" onclick="deleteCategory(${c.id})"></i>`;
+    list.appendChild(chip);
+  });
+}
+
+async function deleteCategory(id) {
+  if (!confirm("Delete category?")) return;
+  await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+  fetchCategories();
+}
+
+async function getData() {
+  const res = await fetch('/api/works');
+  return await res.json();
+}
+
+async function save() {
+  const img = document.getElementById("img");
+  const cat = document.getElementById("cat");
+  const subcat = document.getElementById("subcat");
+
+  if (!img.value || !cat.value) return alert("Please fill fields");
+
+  const work = {
+    id: getNextId(await getData()),
+    category_id: cat.value,
+    subcategory_id: subcat.value || null,
+    image: img.value
+  };
+
+  const res = await fetch('/api/works', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(work)
+  });
+
+  if (res.ok) {
+    img.value = cat.value = subcat.value = "";
+    render();
+    alert("Work published!");
+  }
+}
+
+function getNextId(data) {
+  if (!data || data.length === 0) return "#GXC001";
   let maxNum = 0;
   data.forEach(w => {
     const num = parseInt(w.id.replace("#GXC", ""));
@@ -15,73 +115,52 @@ function getNextId() {
   return "#GXC" + (maxNum + 1).toString().padStart(3, "0");
 }
 
-function updateIdField() {
-  const idField = document.getElementById("id");
-  if (idField) idField.value = getNextId();
-}
-
-function save() {
-  const img = document.getElementById("img");
-  const cat = document.getElementById("cat");
-  const subcat = document.getElementById("subcat");
-
-  if (!img.value || !cat.value || !subcat.value) return alert("Please fill all fields");
-
-  const work = {
-    id: getNextId(),
-    category: cat.value,
-    subcategory: subcat.value,
-    image: img.value
-  };
-
-  const data = getData();
-  data.unshift(work);
-  localStorage.setItem("works", JSON.stringify(data));
-
-  img.value = cat.value = subcat.value = "";
-  updateIdField();
-  render();
-  alert("Work published successfully!");
-}
-
-function del(i) {
-  if (!confirm("Remove this item from portfolio?")) return;
-  const data = getData();
-  data.splice(i, 1);
-  localStorage.setItem("works", JSON.stringify(data));
+async function del(id) {
+  if (!confirm("Remove this item?")) return;
+  await fetch(`/api/works/${id}`, { method: 'DELETE' });
   render();
 }
 
-function render() {
+async function render() {
   if (!list) return;
   list.innerHTML = "";
-  const data = getData();
+  const data = await getData();
   
   if (data.length === 0) {
     list.innerHTML = "<p style='padding: 20px; text-align: center; color: #64748b;'>No items in portfolio.</p>";
     return;
   }
 
-  data.forEach((w, i) => {
+  data.forEach((w) => {
     const d = document.createElement("div");
     d.className = "item";
     let preview = "";
-    if (w.image.includes("youtube.com") || w.image.includes("youtu.be")) {
-      preview = '<i class="fa-brands fa-youtube" style="font-size: 30px; color: #ef4444; width: 60px; text-align: center;"></i>';
+    const isVideo = w.image.includes("youtube.com") || w.image.includes("youtu.be") || w.image.includes("dropbox.com") && w.image.includes("raw=1");
+    
+    if (isVideo) {
+      preview = '<i class="fa-solid fa-video" style="font-size: 30px; color: #10b981; width: 60px; text-align: center;"></i>';
     } else {
       preview = `<img src="${w.image}" onerror="this.src='https://placehold.co/100x100?text=Media'">`;
     }
+    
+    const catName = categories.find(c => c.id == w.category_id)?.name || "Unknown";
+    const subName = categories.find(c => c.id == w.subcategory_id)?.name || "";
+
     d.innerHTML = `
       ${preview}
       <div class="item-info">
         <b>${w.id}</b>
-        <small>${w.category.replace(/_/g, ' ')} / ${w.subcategory.replace(/_/g, ' ')}</small>
+        <small>${catName} ${subName ? '/ ' + subName : ''}</small>
       </div>
-      <button class="btn-delete" onclick="del(${i})"><i class="fa-solid fa-trash"></i> Delete</button>
+      <button class="btn-delete" onclick="del(${w.id})"><i class="fa-solid fa-trash"></i> Delete</button>
     `;
     list.appendChild(d);
   });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetchCategories().then(() => render());
+});
 
 async function renderInquiries() {
   const inquiryList = document.getElementById('inquiryList');
