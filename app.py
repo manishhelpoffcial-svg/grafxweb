@@ -4,13 +4,14 @@ import os
 from supabase import create_client, Client
 
 app = Flask(__name__)
-CORS(app) # Enable CORS globally for all routes
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.secret_key = "grafxcore_secret_key"
 DIRECTORY = "client"
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwb3pieXdzZWl4bGZqa21vdXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NzA2NzQsImV4cCI6MjA4MzI0NjY3NH0.Groc8oCK5XJKAX8bRHwbPU0DmGOhDJDzUbRTo7l9XFU"
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Admin Credentials
@@ -102,6 +103,7 @@ def add_inquiry():
     data = request.json
     if not data:
         return jsonify({"status": "error", "message": "No data received"}), 400
+    
     try:
         response = supabase.table('inquiries').insert({
             "name": str(data.get('name', '')),
@@ -111,8 +113,9 @@ def add_inquiry():
         }).execute()
         return jsonify({"status": "success"}), 201
     except Exception as e:
-        print(f"Supabase error: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        error_msg = str(e)
+        print(f"Supabase error: {error_msg}")
+        return jsonify({"status": "error", "message": error_msg}), 500
 
 @app.route('/api/inquiries', methods=['GET'])
 def get_inquiries():

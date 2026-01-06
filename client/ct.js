@@ -25,13 +25,13 @@ document.getElementById('contactForm').onsubmit = async (e) => {
   try {
     const response = await fetch('/api/inquiries', {
       method: 'POST',
-      mode: 'cors',
       headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(formData)
     });
+
+    const result = await response.json();
 
     if (response.ok) {
       // Create modern popup
@@ -55,7 +55,8 @@ document.getElementById('contactForm').onsubmit = async (e) => {
       e.target.reset();
       updateBudget(5000);
     } else {
-      alert('Error submitting form. Please try again.');
+      console.error('Server error:', result.message);
+      alert('Error: ' + (result.message || 'Please try again later.'));
     }
   } catch (error) {
     console.error('Submission error:', error);
