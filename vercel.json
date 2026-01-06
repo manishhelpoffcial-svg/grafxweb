@@ -4,7 +4,19 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/app.py"
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/login",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/logout",
+      "destination": "/api/index.py"
     },
     {
       "source": "/home",
@@ -21,18 +33,6 @@
     {
       "source": "/contactus",
       "destination": "/client/ct.html"
-    },
-    {
-      "source": "/login",
-      "destination": "/app.py"
-    },
-    {
-      "source": "/admin",
-      "destination": "/app.py"
-    },
-    {
-      "source": "/logout",
-      "destination": "/app.py"
     },
     {
       "source": "/favicon.jpg",
