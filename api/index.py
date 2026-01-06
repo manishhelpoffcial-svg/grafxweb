@@ -3,18 +3,22 @@ from flask_cors import CORS
 import os
 from supabase import create_client, Client
 
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
-
 app.secret_key = "grafxcore_secret_key"
-# On Vercel, the project root is the current working directory
-DIRECTORY = os.path.join(os.getcwd(), "client")
+
+# Vercel-specific path resolution
+# The 'client' folder is in the root directory
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DIRECTORY = os.path.join(ROOT_DIR, "client")
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwb3pieXdzZWl4bGZqa21vdXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NzA2NzQsImV4cCI6MjA4MzI0NjY3NH0.Groc8oCK5XJKAX8bRHwbPU0DmGOhDJDzUbRTo7l9XFU"
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Initialize Supabase Client globally to avoid "unbound" errors
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Admin Credentials
 ADMIN_EMAIL = "manish@grafxcore.in"
@@ -22,11 +26,11 @@ ADMIN_PASSWORD = "Manish@891819"
 
 @app.route('/')
 def root():
-    return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
+    return send_from_directory(DIRECTORY, 'index.html')
 
 @app.route('/home')
 def home():
-    return send_from_directory(DIRECTORY, 'index.html', mimetype='text/html')
+    return send_from_directory(DIRECTORY, 'index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -35,7 +39,7 @@ def login():
     
     error = None
     if request.method == 'POST':
-        if request.form['email'] == ADMIN_EMAIL and request.form['password'] == ADMIN_PASSWORD:
+        if request.form.get('email') == ADMIN_EMAIL and request.form.get('password') == ADMIN_PASSWORD:
             session['logged_in'] = True
             return redirect(url_for('admin'))
         else:
@@ -79,7 +83,7 @@ def login():
 def admin():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    return send_from_directory(DIRECTORY, 'admin.html', mimetype='text/html')
+    return send_from_directory(DIRECTORY, 'admin.html')
 
 @app.route('/logout')
 def logout():
@@ -88,17 +92,17 @@ def logout():
 
 @app.route('/contactus')
 def contact():
-    return send_from_directory(DIRECTORY, 'ct.html', mimetype='text/html')
+    return send_from_directory(DIRECTORY, 'ct.html')
 
 @app.route('/aboutus')
 def about():
     if os.path.exists(os.path.join(DIRECTORY, 'about.html')):
-        return send_from_directory(DIRECTORY, 'about.html', mimetype='text/html')
+        return send_from_directory(DIRECTORY, 'about.html')
     return redirect('/home')
 
 @app.route('/portfolio')
 def portfolio_clean():
-    return send_from_directory(DIRECTORY, 'wpage.html', mimetype='text/html')
+    return send_from_directory(DIRECTORY, 'wpage.html')
 
 @app.route('/api/inquiries', methods=['POST', 'OPTIONS'])
 def add_inquiry():
@@ -109,7 +113,7 @@ def add_inquiry():
         return jsonify({"status": "error", "message": "No data received"}), 400
     
     try:
-        response = supabase.table('inquiries').insert({
+        supabase.table('inquiries').insert({
             "name": str(data.get('name', '')),
             "email": str(data.get('email', '')),
             "budget": str(data.get('budget', '0')),
@@ -154,6 +158,3 @@ def static_files(path):
         return redirect('/' + path[:-5])
     
     return send_from_directory(DIRECTORY, path)
-
-# This is important for Vercel
-app = app
