@@ -4,7 +4,9 @@ import os
 from supabase import create_client, Client
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+# Enable CORS for all routes and origins explicitly for Vercel
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 app.secret_key = "grafxcore_secret_key"
 DIRECTORY = "client"
 
@@ -98,8 +100,10 @@ def about():
 def portfolio_clean():
     return send_from_directory(DIRECTORY, 'wpage.html', mimetype='text/html')
 
-@app.route('/api/inquiries', methods=['POST'])
+@app.route('/api/inquiries', methods=['POST', 'OPTIONS'])
 def add_inquiry():
+    if request.method == 'OPTIONS':
+        return '', 204
     data = request.json
     if not data:
         return jsonify({"status": "error", "message": "No data received"}), 400

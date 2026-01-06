@@ -3,11 +3,7 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/api/inquiries",
-      "destination": "/app.py"
-    },
-    {
-      "source": "/api/inquiries/(.*)",
+      "source": "/api/(.*)",
       "destination": "/app.py"
     },
     {

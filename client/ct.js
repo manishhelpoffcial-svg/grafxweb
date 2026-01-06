@@ -31,11 +31,15 @@ document.getElementById('contactForm').onsubmit = async (e) => {
       body: JSON.stringify(formData)
     });
 
-    const result = await response.json();
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server returned ${response.status}`);
+    }
 
-    if (response.ok) {
-      // Create modern popup
-      const popup = document.createElement('div');
+    const result = await response.json();
+    
+    // Create modern popup
+    const popup = document.createElement('div');
       popup.style.cssText = `
         position: fixed; top: 20px; right: 20px; 
         background: #10b981; color: white; 
