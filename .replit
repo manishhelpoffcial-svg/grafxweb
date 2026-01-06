@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python api/index.py"
+args = "gunicorn app:app --bind 0.0.0.0:5000 --timeout 120 --workers 2"
 waitForPort = 5000
 
 [[ports]]

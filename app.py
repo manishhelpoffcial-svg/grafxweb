@@ -8,16 +8,14 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.secret_key = "grafxcore_secret_key"
 
-# Vercel-specific path resolution
-# The 'client' folder is in the root directory
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIRECTORY = os.path.join(ROOT_DIR, "client")
+# Path resolution for Render (root directory)
+DIRECTORY = "client"
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwb3pieXdzZWl4bGZqa21vdXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NzA2NzQsImV4cCI6MjA4MzI0NjY3NH0.Groc8oCK5XJKAX8bRHwbPU0DmGOhDJDzUbRTo7l9XFU"
 
-# Initialize Supabase Client globally to avoid "unbound" errors
+# Initialize Supabase Client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Admin Credentials
@@ -158,3 +156,6 @@ def static_files(path):
         return redirect('/' + path[:-5])
     
     return send_from_directory(DIRECTORY, path)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
