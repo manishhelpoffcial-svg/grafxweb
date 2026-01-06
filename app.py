@@ -97,8 +97,10 @@ def about():
 def portfolio_clean():
     return send_from_directory(DIRECTORY, 'wpage.html', mimetype='text/html')
 
-@app.route('/api/inquiries', methods=['POST'])
+@app.route('/api/inquiries', methods=['POST', 'OPTIONS'])
 def add_inquiry():
+    if request.method == 'OPTIONS':
+        return '', 204
     data = request.json
     try:
         response = supabase.table('inquiries').insert({
