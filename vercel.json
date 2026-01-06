@@ -12,19 +12,19 @@
     },
     {
       "source": "/home",
-      "destination": "/app.py"
+      "destination": "/client/index.html"
     },
     {
       "source": "/aboutus",
-      "destination": "/app.py"
+      "destination": "/client/about.html"
     },
     {
       "source": "/portfolio",
-      "destination": "/app.py"
+      "destination": "/client/wpage.html"
     },
     {
       "source": "/contactus",
-      "destination": "/app.py"
+      "destination": "/client/ct.html"
     },
     {
       "source": "/login",
