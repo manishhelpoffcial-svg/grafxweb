@@ -7,8 +7,8 @@ app.secret_key = "grafxcore_secret_key"
 DIRECTORY = "client"
 
 # Supabase Configuration
-SUPABASE_URL = "https://rysuqfamvbwqcaoyfwzx.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5c3VxZmFtdmJ3cWNhb3lmd3p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzYxNDEsImV4cCI6MjA4MzExMjE0MX0.9hyiBNaDOPNP6U8EjVkalgUpvIO5opj9T5HsoV3yEZo"
+SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhwb3pieXdzZWl4bGZqa21vdXp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2NzA2NzQsImV4cCI6MjA4MzI0NjY3NH0.Groc8oCK5XJKAX8bRHwbPU0DmGOhDJDzUbRTo7l9XFU"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Admin Credentials
