@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 app.secret_key = "grafxcore_secret_key"
-DIRECTORY = "client"
+DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)), "client")
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
