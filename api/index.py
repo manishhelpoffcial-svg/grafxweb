@@ -165,5 +165,5 @@ def static_files(path):
     
     return send_from_directory(DIRECTORY, path)
 
-# This is important for Vercel
+# Vercel entry point
 app = app
