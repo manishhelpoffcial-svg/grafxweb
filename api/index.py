@@ -8,8 +8,8 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 app.secret_key = "grafxcore_secret_key"
-# Fix: Force directory to root for Vercel environment
-DIRECTORY = os.path.join(os.getcwd(), "client")
+# Fix: Vercel serverless functions root is the project root
+DIRECTORY = os.path.join(os.path.dirname(os.path.dirname(__file__)), "client")
 
 # Supabase Configuration
 SUPABASE_URL = "https://hpozbywseixlfjkmouzu.supabase.co"
@@ -165,7 +165,5 @@ def static_files(path):
     
     return send_from_directory(DIRECTORY, path)
 
+# This is important for Vercel
 app = app
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
