@@ -31,15 +31,11 @@ document.getElementById('contactForm').onsubmit = async (e) => {
       body: JSON.stringify(formData)
     });
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Server returned ${response.status}`);
-    }
-
     const result = await response.json();
-    
-    // Create modern popup
-    const popup = document.createElement('div');
+
+    if (response.ok) {
+      // Create modern popup
+      const popup = document.createElement('div');
       popup.style.cssText = `
         position: fixed; top: 20px; right: 20px; 
         background: #10b981; color: white; 
@@ -72,10 +68,12 @@ document.getElementById('contactForm').onsubmit = async (e) => {
 };
 
 // Add animations to head
-const style = document.createElement('style');
-style.innerHTML = `
-  @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
-  @keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(120%); opacity: 0; } }
-`;
-document.head.appendChild(style);
-
+if (!document.getElementById('popup-styles')) {
+    const style = document.createElement('style');
+    style.id = 'popup-styles';
+    style.innerHTML = `
+      @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+      @keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(120%); opacity: 0; } }
+    `;
+    document.head.appendChild(style);
+}
